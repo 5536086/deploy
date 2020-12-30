@@ -4,8 +4,16 @@
 
 这是一个多服务器端口租用管理面板，你可以添加多台服务器及端口，并将其分配给任意注册用户，租户则可以很方便地使用被分配的端口来完成各种操作，目前支持的端口功能：
 
-- iptables 转发端口
-- gost 加密隧道
+- iptables
+- [socat](http://www.dest-unreach.org/socat/)
+- [gost](https://github.com/ginuerzh/gost)
+- [ehco](https://github.com/Ehco1996/ehco)
+- [v2ray](https://github.com/v2ray/v2ray-core)
+- [brook](https://github.com/txthinking/brook)
+- [wstunnel](https://github.com/erebe/wstunnel)
+- [shadowsocks](https://github.com/shadowsocks)
+- [tinyPortMapper](https://github.com/wangyu-/tinyPortMapper)
+- [Prometheus Node Exporter](https://github.com/leishi1313/node_exporter)
 
 ### 限制
 
@@ -19,6 +27,8 @@
 ```shell
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
+# 启动并设置开机自启docker
+systemctl enable --now docker
 ```
 
 #### 非 root 用户
@@ -55,11 +65,11 @@ ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 git clone https://github.com/Aurora-Admin-Panel/deploy.git
 cd deploy
 docker-compose up -d
-# 更新数据库
-docker-compose run --rm backend alembic upgrade heads
-# 创建超级用户
-docker-compose run --rm backend python app/initial_data.py
+# 创建管理员用户
+docker-compose exec backend python app/initial_data.py
 ```
+之后可以访问`http://你的IP:8000`进入面板
+
 
 #### 设置机器自动重启面板
 
@@ -77,23 +87,21 @@ sudo systemctl enable docker
 
 ### 正式版
 ```shell
-git reset --hard HEAD
 git pull origin main
-docker-compose pull && docker-compose down && docker-compose up -d && docker-compose exec backend alembic upgrade heads
+docker-compose pull && docker-compose down --remove-orphans && docker-compose up -d && docker-compose exec backend alembic upgrade heads
 ```
 
 ### 测试版
 ```shell
-git reset --hard HEAD
 git pull origin main
-docker-compose -f docker-compose-dev.yml pull && docker-compose -f docker-compose-dev.yml down && docker-compose -f docker-compose-dev.yml up -d && docker-compose -f docker-compose-dev.yml exec backend alembic upgrade heads
+docker-compose -f docker-compose-dev.yml pull && docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up -d && docker-compose -f docker-compose-dev.yml exec backend alembic upgrade heads
 ```
 
 ## 数据库备份与恢复
 
 ### 备份
 ```shell
-docker-compose exec postgres pg_dump -U [数据库用户名，默认aurora] -a > data.sql
+docker-compose exec postgres pg_dump -d aurora -U [数据库用户名，默认aurora] -a > data.sql
 ```
 
 ### 恢复
